@@ -1,2 +1,2 @@
 # ansible
-Ansible for setup some server using Ansible playbooks
+Ansible playbooks for setup some servers
