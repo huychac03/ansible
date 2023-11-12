@@ -1,0 +1,86 @@
+---
+- hosts: gitlab-runner
+  become: true
+
+  vars:
+    - NUMBER_OF_CONCURRENT: 1
+    - reg_token_1: "token"
+
+  tasks:
+    - name: APT update
+      shell:
+        apt-get update
+
+    - name: Install required system packages
+      apt:
+        pkg:
+          - apt-transport-https
+          - ca-certificates
+          - curl
+          - software-properties-common
+          - python3-pip
+          - virtualenv
+          - python3-setuptools
+          - gnupg
+        state: latest
+        update_cache: false
+      
+    - name: Add Docker GPG apt Key
+      shell: |
+        install -m 0755 -d /etc/apt/keyrings
+        curl -fsSL https://download.docker.com/linux/ubuntu/gpg | sudo gpg --dearmor -o /etc/apt/keyrings/docker.gpg
+        chmod a+r /etc/apt/keyrings/docker.gpg
+
+    - name: Add the repository to Apt sources
+      shell: |
+        echo \
+          "deb [arch="$(dpkg --print-architecture)" signed-by=/etc/apt/keyrings/docker.gpg] https://download.docker.com/linux/ubuntu \
+          "$(. /etc/os-release && echo "$VERSION_CODENAME")" stable" | \
+          tee /etc/apt/sources.list.d/docker.list > /dev/null
+        apt update
+
+    - name: Install docker-ce and need plugins
+      shell:
+        apt install -y docker-ce docker-ce-cli containerd.io docker-buildx-plugin docker-compose-plugin
+
+    - name: Add the Gitlab Runner official GitLab repository
+      shell: |
+        curl -L "https://packages.gitlab.com/install/repositories/runner/gitlab-runner/script.deb.sh" | sudo bash
+
+    - name: Install gitlab runner
+      shell: |
+        apt-cache madison gitlab-runner
+        apt -y install gitlab-runner=16.5.0
+        
+    - name: Add gitlab-runner user to docker group
+      shell: 
+        usermod -aG docker gitlab-runner
+
+    - name: Register gitlab docker runner 1
+      command: |
+        gitlab-runner register \
+        --non-interactive \
+        --url "https://gitlab.com/" \
+        --registration-token "{{ reg_token_1 }}" \
+        --executor "docker" \
+        --docker-image alpine:latest \
+        --description "docker-runner 1" \
+        --run-untagged="true" \
+        --locked="false" \
+        --access-level="not_protected"
+
+    - name: Modify the "concurrent number" in /etc/gitlab-runner/config.toml file
+      lineinfile:
+        path: /etc/gitlab-runner/config.toml  # Specify the path 
+        regexp: '^concurrent ='  # Replace KEY_NAME with the name of the key you want to change
+        line: 'concurrent = {{ NUMBER_OF_CONCURRENT }}'  
+      become: yes
+
+    - name: Restart Gitlab Runner
+      shell:
+        gitlab-runner restart
+
+
+
+
+
