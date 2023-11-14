@@ -1,0 +1,43 @@
+---
+- name: Install Docker
+  shell:
+    curl https://get.docker.com | sh
+
+- name: Add the Gitlab Runner official GitLab repository
+  shell: |
+    curl -L "https://packages.gitlab.com/install/repositories/runner/gitlab-runner/script.deb.sh" | sudo bash
+
+- name: Install require Gilab-runner packages
+  apt:
+    pkg:
+      - gitlab-runner=16.5.0
+    update_cache: yes
+
+- name: Add gitlab-runner user to docker group
+  ansible.builtin.user:
+    name: gitlab-runner
+    groups: docker,gitlab-runner
+
+- name: Register gitlab docker runner
+  command: |
+    gitlab-runner register \
+    --non-interactive \
+    --url {{ GITLAB_URL }} \
+    --registration-token "{{ RUNNER_AUTHENTICATION_TOKEN }}" \
+    --executor "docker" \
+    --docker-image alpine:latest \
+    --description "docker-runner" \
+    --run-untagged="true" \
+    --locked="false" \
+    --access-level="not_protected"
+
+- name: Modify the "concurrent number" in /etc/gitlab-runner/config.toml file
+  lineinfile:
+    path: /etc/gitlab-runner/config.toml  # Specify the path
+    regexp: '^concurrent ='  # Replace KEY_NAME with the name of the key you want to change
+    line: 'concurrent = {{ NUMBER_OF_CONCURRENT }}'
+  become: yes
+
+- name: Restart Gitlab Runner
+  shell:
+    gitlab-runner restart

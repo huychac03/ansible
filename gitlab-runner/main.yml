@@ -1,0 +1,10 @@
+- hosts: gitlab_runner
+  become: true
+  tasks:
+    - import_tasks: ansible-tasks/gitlab-runner.ansible.yml
+  vars:
+    - NUMBER_OF_CONCURRENT: 3
+    - RUNNER_AUTHENTICATION_TOKEN: ""
+    - GITLAB_URL: "https://gitlab.com/"
+  tags:
+    - gitlab-runner
