@@ -4,12 +4,13 @@
 
   vars:
     - NUMBER_OF_CONCURRENT: 1
-    - reg_token_1: "token"
+    - RUNNER_AUTHENTICATION_TOKEN: ""
+    - GITLAB_URL: "https://gitlab.com/"
 
   tasks:
     - name: APT update
-      shell:
-        apt-get update
+      apt:
+        update_cache: yes
 
     - name: Install required system packages
       apt:
@@ -24,12 +25,26 @@
           - gnupg
         state: latest
         update_cache: false
-      
-    - name: Add Docker GPG apt Key
-      shell: |
-        install -m 0755 -d /etc/apt/keyrings
+
+    - name: Remove existing Docker GPG apt Key
+      file:
+        path: /etc/apt/keyrings/docker.gpg
+        state: absent
+
+    - name: Create directory for Docker GPG key
+      file:
+        path: /etc/apt/keyrings
+        state: directory
+        mode: '0755'
+
+    - name: Download, install and convert Docker GPG key
+      shell:
         curl -fsSL https://download.docker.com/linux/ubuntu/gpg | sudo gpg --dearmor -o /etc/apt/keyrings/docker.gpg
-        chmod a+r /etc/apt/keyrings/docker.gpg
+
+    - name: Set permissions for Docker GPG key
+      file:
+        path: /etc/apt/keyrings/docker.gpg
+        mode: '0644'
 
     - name: Add the repository to Apt sources
       shell: |
@@ -37,34 +52,46 @@
           "deb [arch="$(dpkg --print-architecture)" signed-by=/etc/apt/keyrings/docker.gpg] https://download.docker.com/linux/ubuntu \
           "$(. /etc/os-release && echo "$VERSION_CODENAME")" stable" | \
           tee /etc/apt/sources.list.d/docker.list > /dev/null
-        apt update
 
-    - name: Install docker-ce and need plugins
-      shell:
-        apt install -y docker-ce docker-ce-cli containerd.io docker-buildx-plugin docker-compose-plugin
+    - name: APT update
+      apt:
+        update_cache: yes
+
+    - name: Install require Docker packages
+      apt:
+        pkg:
+          - docker-ce
+          - docker-ce-cli
+          - containerd.io
+          - docker-buildx-plugin
+          - docker-compose-plugin
+        state: latest
+        update_cache: false
 
     - name: Add the Gitlab Runner official GitLab repository
       shell: |
         curl -L "https://packages.gitlab.com/install/repositories/runner/gitlab-runner/script.deb.sh" | sudo bash
 
     - name: Install gitlab runner
-      shell: |
-        apt-cache madison gitlab-runner
-        apt -y install gitlab-runner=16.5.0
-        
-    - name: Add gitlab-runner user to docker group
-      shell: 
-        usermod -aG docker gitlab-runner
+      apt:
+        pkg:
+          - gitlab-runner=16.5.0
+        update_cache: yes
 
-    - name: Register gitlab docker runner 1
+    - name: Add gitlab-runner user to docker group
+      ansible.builtin.user:
+        name: gitlab-runner
+        group: docker
+
+    - name: Register gitlab docker runner
       command: |
         gitlab-runner register \
         --non-interactive \
-        --url "https://gitlab.com/" \
-        --registration-token "{{ reg_token_1 }}" \
+        --url {{ GITLAB_URL }} \
+        --registration-token "{{ RUNNER_AUTHENTICATION_TOKEN }}" \
         --executor "docker" \
         --docker-image alpine:latest \
-        --description "docker-runner 1" \
+        --description "docker-runner" \
         --run-untagged="true" \
         --locked="false" \
         --access-level="not_protected"
