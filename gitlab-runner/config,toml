@@ -1,0 +1,72 @@
+concurrent = 3
+check_interval = 0
+shutdown_timeout = 0
+
+[session_server]
+  session_timeout = 1800
+
+[[runners]]
+  name = "docker-runner"
+  url = "https://gitlab.com/"
+  id = 29597193
+  token = "fAk7ygmCJA-PCxPkqtsv"
+  token_obtained_at = 2023-11-17T19:15:22Z
+  token_expires_at = 0001-01-01T00:00:00Z
+  executor = "docker"
+  [runners.cache]
+    Type = "s3"
+    Shared = true
+    [runners.cache.s3]
+      ServerAddress = "s3.amazonaws.com"
+      AccessKey = "AKIAWOND2BIT575TQJIV"
+      SecretKey = "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"
+      BucketName = "emddi-gitlab-cache"
+      BucketLocation = "ap-southeast-1"
+      Insecure = false
+      ServerSideEncryption = "S3"
+  [runners.docker]
+    tls_verify = false
+    image = "alpine:latest"
+    privileged = false
+    disable_entrypoint_overwrite = false
+    oom_kill_disable = false
+    disable_cache = false
+    volumes = ["/cache"]
+    shm_size = 0
+    network_mtu = 0
+
+
+
+
+
+
+
+concurrent = 3
+check_interval = 0
+shutdown_timeout = 0
+
+[session_server]
+  session_timeout = 1800
+
+[[runners]]
+  name = "docker-runner"
+  url = "https://gitlab.com/"
+  id = 29597193
+  token = "fAk7ygmCJA-PCxPkqtsv"
+  token_obtained_at = 2023-11-17T19:15:22Z
+  token_expires_at = 0001-01-01T00:00:00Z
+  executor = "docker"
+  [runners.cache]
+    MaxUploadedArchiveSize = 0
+  [runners.docker]
+    tls_verify = false
+    image = "alpine:latest"
+    privileged = false
+    disable_entrypoint_overwrite = false
+    oom_kill_disable = false
+    disable_cache = false
+    volumes = ["/cache"]
+    shm_size = 0
+    network_mtu = 0
+
+
