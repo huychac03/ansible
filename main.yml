@@ -1,0 +1,12 @@
+- hosts: rabbitmq
+  become: true
+  tasks:
+    - import_tasks: ansible-tasks/rabbitmq.ansible.yml
+  tags:
+    - rabbitmq
+- hosts: ubuntu
+  become: true
+  tasks:
+    - import_tasks: ansible-tasks/install_timescaledb.yml
+  tags:
+    - timescaledb

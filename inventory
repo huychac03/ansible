@@ -1,0 +1,5 @@
+[rabbitmq]
+x.x.x.x ansible_user=ubuntu ansible_connection=ssh
+
+[ubuntu]
+47.129.14.245

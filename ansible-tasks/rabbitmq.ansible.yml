@@ -1,0 +1,30 @@
+---
+- name: Install Docker
+  shell:
+    curl https://get.docker.com | sh
+
+- name: Check if the data directory exists
+  stat:
+    path: /data/
+  register: dir_status
+
+- name: Create the data directory if it doesn't exist
+  file:
+    path: /data/
+    state: directory
+  when: not dir_status.stat.exists
+
+- name: Create the directory rabbitmq
+  file:
+    path: /data/rabbitmq
+    state: directory
+
+- name: Copy rabbitmq dir
+  copy:
+    src: ../docker_compose/rabbitmq/
+    dest: /data/rabbitmq/
+
+- name: Run docker compose to start serivces
+  command:
+    cmd: 'docker compose up -d'
+    chdir: /data/rabbitmq/

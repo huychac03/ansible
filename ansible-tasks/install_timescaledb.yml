@@ -1,0 +1,20 @@
+---
+- hosts: ubuntu
+  become: yes
+  tasks:
+    - name: Pull and run TimescaleDB Docker image
+      docker_container:
+        name: timescaledb
+        image: timescale/timescaledb-ha:pg14-latest
+        state: started
+        recreate: yes
+        published_ports: 5432:5432
+        env:
+          POSTGRES_PASSWORD: postgres
+          POSTGRES_USER: postgres
+          POSTGRES_DB: my_database
+    - name: Wait for DB Initialization
+      wait_for:
+        host: 0.0.0.0
+        port: 5432
+        delay: 5
