@@ -4,9 +4,22 @@
     - import_tasks: ansible-tasks/rabbitmq.ansible.yml
   tags:
     - rabbitmq
-- hosts: ubuntu
+
+- hosts: timescaledb
   become: true
   tasks:
     - import_tasks: ansible-tasks/install_timescaledb.yml
   tags:
     - timescaledb
+
+- hosts: gitlab_runner
+  become: true
+  tasks:
+    - import_tasks: ansible-tasks/gitlab-runner.ansible.yml
+  vars:
+    - NUMBER_OF_CONCURRENT: 1
+    - RUNNER_AUTHENTICATION_TOKEN_1: ""  # Optinal, only if you regist docker runners
+    - RUNNER_AUTHENTICATION_TOKEN_2: ""
+    - GITLAB_URL: "https://gitlab.emddi.xyz/"
+  tags:
+    - gitlab-runner
