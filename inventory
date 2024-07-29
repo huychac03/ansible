@@ -1,5 +1,8 @@
 [rabbitmq]
-x.x.x.x ansible_user=ubuntu ansible_connection=ssh
+x.x.x.x     ansible_connection=ssh        ansible_user=ubuntu
 
-[ubuntu]
-47.129.14.245
+[timescaledb]
+x.x.x.x     ansible_connection=ssh        ansible_user=ubuntu
+
+[gitlab_runner]
+x.x.x.x     ansible_connection=ssh        ansible_user=ubuntu
